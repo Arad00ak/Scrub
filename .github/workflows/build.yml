@@ -3,8 +3,12 @@ name: Build
 on:
   push:
     branches: ["main"]
+    tags: ["v*"]
   pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   windows:
@@ -29,11 +33,23 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path dist | Out-Null
           go build -trimpath -ldflags "-s -w" -o dist/scrub.exe .
+          Compress-Archive -Path dist/scrub.exe -DestinationPath dist/scrub-windows-amd64.zip -Force
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: scrub-windows-amd64
-          path: dist/scrub.exe
+          path: |
+            dist/scrub.exe
+            dist/scrub-windows-amd64.zip
           if-no-files-found: error
-# woh
+
+      - name: Create GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Scrub ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            dist/scrub.exe
+            dist/scrub-windows-amd64.zip
