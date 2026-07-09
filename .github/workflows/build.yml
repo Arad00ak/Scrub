@@ -36,3 +36,4 @@ jobs:
           name: scrub-windows-amd64
           path: dist/scrub.exe
           if-no-files-found: error
+# wohoo
