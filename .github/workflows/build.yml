@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches: ["main"]
-    tags: ["v*"]
+    tags: ["1.0.0"]
   pull_request:
   workflow_dispatch:
 
@@ -45,7 +45,7 @@ jobs:
           if-no-files-found: error
 
       - name: Create GitHub release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: github.ref_name == '1.0.0'
         uses: softprops/action-gh-release@v2
         with:
           name: Scrub ${{ github.ref_name }}
