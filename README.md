@@ -1,46 +1,24 @@
 # Scrub
 
-Scrub is a lightweight Windows shell utility for removing metadata from image files.
+Strips metadata from images on Windows.
 
-It is not a desktop app and has no background service, tray process, telemetry, cloud features, automatic updates, or configuration UI. Install it once, right-click image files in File Explorer, choose **Remove Metadata with Scrub**, and Scrub writes cleaned copies beside the originals.
+Right-click a photo in Explorer, pick "Remove Metadata with Scrub", and you get a cleaned copy next to the original. `IMG_1234.jpg` becomes `Scrub-IMG_1234.jpg`. The original is left alone.
 
 ## Install
 
-Download `scrub.exe` from the latest GitHub Actions build or release, then run:
+Download `scrub.exe` from the latest GitHub Actions build or release, then:
 
 ```powershell
 .\scrub.exe --install
 ```
 
-This copies Scrub to:
-
-```text
-%LOCALAPPDATA%\Scrub\scrub.exe
-```
-
-and registers the Explorer context menu entry:
-
-```text
-Remove Metadata with Scrub
-```
-
-No administrator rights are required because the registry entry is installed for the current user only.
+That copies it to `%LOCALAPPDATA%\Scrub\scrub.exe` and adds the Explorer menu for your user. No admin needed.
 
 ## Use
 
-In File Explorer:
+Select one or more images in Explorer, right-click, choose "Remove Metadata with Scrub".
 
-1. Select one or more image files.
-2. Right-click the selection.
-3. Choose **Remove Metadata with Scrub**.
-
-Scrub creates cleaned files in the same folder:
-
-```text
-IMG_1234.jpg -> Scrub-IMG_1234.jpg
-```
-
-Command-line use also works:
+Or from a terminal:
 
 ```powershell
 .\scrub.exe image1.jpg image2.png image3.webp
@@ -52,32 +30,20 @@ Command-line use also works:
 .\scrub.exe --uninstall
 ```
 
-This removes the Explorer context menu entry. You can then delete `%LOCALAPPDATA%\Scrub\scrub.exe` if desired.
+That removes the Explorer menu. Delete `%LOCALAPPDATA%\Scrub\scrub.exe` if you also want the binary gone.
 
-## Format Support
+## Formats
 
-| Format | Behavior |
-| --- | --- |
-| JPEG | Losslessly removes APP metadata and comments, including EXIF, XMP, IPTC, GPS, thumbnails, and camera metadata containers. |
-| PNG | Removes nonessential metadata chunks while preserving critical and pixel-relevant chunks. |
-| WebP | Losslessly removes EXIF, XMP, and ICCP chunks. |
-| GIF | Removes comments and XMP application extensions while preserving image and animation data. |
-| BMP | Uses Windows imaging fallback to write a clean copy. |
-| TIFF | Uses Windows imaging fallback to write a clean copy. |
-| HEIC/HEIF | Attempts Windows imaging fallback when Windows has compatible codecs installed. |
+JPEG, PNG, WebP, and GIF drop metadata without re-encoding pixels. JPEG loses APP segments and comments (EXIF, XMP, IPTC, GPS, thumbnails). PNG keeps critical chunks plus `tRNS` and APNG frames. WebP drops EXIF, XMP, and ICCP. GIF drops comments and XMP.
 
-Unsupported or unrecognized formats are skipped with an error message. Existing `Scrub-*` output files with the same name are replaced.
+BMP, TIFF, and HEIC/HEIF are rewritten with Windows Imaging. HEIC only works if Windows has a codec for it.
 
-## Build Locally
+Unrecognized files are skipped with an error. An existing `Scrub-*` file with the same name is overwritten.
 
-Requirements:
+## Build
 
-- Windows
-- Go 1.22 or newer
-
-Build:
+Windows, Go 1.22 or newer:
 
 ```powershell
-go test ./...
 go build -trimpath -ldflags "-s -w" -o scrub.exe .
 ```
